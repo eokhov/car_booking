@@ -1,0 +1,35 @@
+{
+  "name": "car_booking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon main.js",
+    "start": "node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/eokhov/car_booking.git"
+  },
+  "author": "Evgeniy Okhov <eokhov@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/eokhov/car_booking/issues"
+  },
+  "homepage": "https://gitlab.com/eokhov/car_booking#readme",
+  "devDependencies": {
+    "@babel/core": "^7.15.8",
+    "@babel/eslint-parser": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "eslint": "^8.1.0",
+    "nodemon": "^2.0.14"
+  },
+  "dependencies": {
+    "fastify": "^3.22.1",
+    "fastify-env": "^2.1.1",
+    "fastify-postgres": "^3.6.0",
+    "fastify-swagger": "^4.12.6",
+    "pg": "^8.7.1"
+  }
+}
