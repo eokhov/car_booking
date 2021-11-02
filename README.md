@@ -32,3 +32,5 @@ After successful migrations, you can run the project with the command
 ```
 $npm start
 ```
+
+After the project is launched, the swagger documentation will be available via the route `/documentation`
