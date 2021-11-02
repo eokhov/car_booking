@@ -29,7 +29,6 @@
     "dayjs": "^1.10.7",
     "fastify": "^3.22.1",
     "fastify-env": "^2.1.1",
-    "fastify-postgres": "^3.6.0",
     "fastify-swagger": "^4.12.6",
     "pg": "^8.7.1"
   }
