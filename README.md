@@ -1,13 +1,13 @@
 # Car booking project
 
-###Development environment
+### Development environment
 
 ```
 NodeJS: v16.10.0
 Postgresql: 10.18
 ```
 
-###Startup
+### Startup
 First of all, you need to install the dependencies
 
 ```
