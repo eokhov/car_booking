@@ -1,13 +1,13 @@
 # Car booking project
 
-###Development environment
+### Development environment
 
 ```
 NodeJS: v16.10.0
 Postgresql: 10.18
 ```
 
-###Startup
+### Startup
 First of all, you need to install the dependencies
 
 ```
@@ -32,3 +32,5 @@ After successful migrations, you can run the project with the command
 ```
 $npm start
 ```
+
+After the project is launched, the swagger documentation will be available via the route `/documentation`
