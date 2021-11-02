@@ -26,6 +26,7 @@
     "nodemon": "^2.0.14"
   },
   "dependencies": {
+    "dayjs": "^1.10.7",
     "fastify": "^3.22.1",
     "fastify-env": "^2.1.1",
     "fastify-postgres": "^3.6.0",

@@ -1,10 +1,12 @@
+import dayjs from 'dayjs';
+
 const definition = (
   daysCount,
   tarif,
   discountPlan,
   range = 4,
   discount = 0,
-  i = 0
+  i = 0,
 ) => {
   const r = daysCount >= range ? range : daysCount;
   const dC = daysCount - range;
@@ -21,62 +23,87 @@ const definition = (
         discountPlan,
         ++range,
         discountPlan[i].discount_size,
-        ++i
+        ++i,
       )
     );
   }
 };
 
 const defineDateRange = (startDate, finishDate) => {
-  const sDate = new Date(startDate);
-  const fDate = new Date(finishDate);
-
-  const startDay = sDate.getDay();
-  const finishDay = fDate.getDay();
-
-  const diff = fDate - sDate;
-  const dateRange = Math.ceil(diff / (1000 * 3600 * 24)) + 1;
+  const startDay = dayjs(startDate).day();
+  const finishDay = dayjs(finishDate).day();
 
   if (startDay === 6 || startDay === 0) {
     return {
-      dateRange,
       startWorkday: false,
     };
   }
   if (finishDay === 6 || finishDay === 0) {
     return {
-      dateRange,
       finishWorkday: false,
     };
   }
 
   return {
-    dateRange,
     startWorkday: true,
     finishWorkday: true,
   };
 };
 
-const addDays = (date, days) => {
-  const ts = new Date(date);
-  const result = ts.setDate(ts.getDate() + days);
-  return new Date(result);
-};
+const addDays = (date, days) =>
+  dayjs(date).add(days, 'day').format('YYYY-MM-DD');
 
-const getStartAndFinishDay = () => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const firstDay = new Date(year, month, 2).getDate();
-  const lastDay = new Date(year, month, 0).getDate();
+const getDatesRange = (start, finish) => dayjs(finish).diff(start, 'days');
+
+const getStartAndFinishDay = m => {
+  const month = dayjs().set('month', --m);
+
   return {
-    firstDay: new Date(`${year}-${month}-${firstDay}`)
-      .toISOString()
-      .split('T')[0],
-    lastDay: new Date(`${year}-${month}-${lastDay}`)
-      .toISOString()
-      .split('T')[0],
+    firstDay: month.set('date', 1).format('YYYY-MM-DD'),
+    lastDay: month.set('date', month.daysInMonth()).format('YYYY-MM-DD'),
   };
 };
 
-export { definition, defineDateRange, addDays, getStartAndFinishDay };
+class D {
+  constructor(first, last) {
+    this.firstDate = first;
+    this.lastDate = last;
+    this.range = this.calcRange();
+  }
+
+  calcRange() {
+    return dayjs(this.lastDate).diff(this.firstDate, 'days') + 1;
+  }
+}
+
+const defineTransitionMonth = (from, to) => {
+  const fromM = dayjs(from).month();
+  const toM = dayjs(to).month();
+
+  if (fromM !== toM) {
+    const lastDateFrom = dayjs(from).daysInMonth();
+    return [
+      new D(
+        dayjs(from).format('YYYY-MM-DD'),
+        dayjs(from).set('date', lastDateFrom).format('YYYY-MM-DD'),
+      ),
+      new D(
+        dayjs(to).date(1).format('YYYY-MM-DD'),
+        dayjs(to).format('YYYY-MM-DD'),
+      ),
+    ];
+  } else {
+    return [
+      new D(dayjs(from).format('YYYY-MM-DD'), dayjs(to).format('YYYY-MM-DD')),
+    ];
+  }
+};
+
+export {
+  definition,
+  defineDateRange,
+  addDays,
+  getDatesRange,
+  getStartAndFinishDay,
+  defineTransitionMonth,
+};

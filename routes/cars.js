@@ -3,6 +3,7 @@ import {
   calculationCost,
   createCarSession,
   getCarsStat,
+  checkAvailability,
 } from '../controllers/cars.js';
 
 const Car = {
@@ -62,6 +63,28 @@ const calculationCostOpts = {
   },
   handler: calculationCost,
 };
+const checkAvailabilityOpts = {
+  schema: {
+    query: {
+      type: 'object',
+      properties: {
+        start_date: { type: 'string' },
+        finish_date: { type: 'string' },
+        car_id: { type: 'number' },
+      },
+      required: ['start_date', 'finish_date', 'car_id'],
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          status: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: checkAvailability,
+};
 
 const getCarsStatOpts = {
   schema: {
@@ -69,6 +92,7 @@ const getCarsStatOpts = {
       type: 'object',
       properties: {
         car_id: { type: 'number' },
+        month: { type: 'number' },
       },
     },
     response: {
@@ -108,6 +132,7 @@ const createCarSessionOpts = {
 
 const carRoutes = (app, options, done) => {
   app.get('/car/calculation', calculationCostOpts);
+  app.get('/car/check', checkAvailabilityOpts);
   app.get('/car/stat', getCarsStatOpts);
   app.post('/car/session', createCarSessionOpts);
   app.get('/car', getCarsOpts);
