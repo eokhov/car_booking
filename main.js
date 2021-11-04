@@ -1,4 +1,4 @@
-import { buildFastify } from './app.js';
+import { buildFastify } from './app/index.js';
 
 const app = buildFastify({
   logger: true,

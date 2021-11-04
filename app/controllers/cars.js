@@ -1,4 +1,4 @@
-import db from '../db.js';
+import db from '../../db.js';
 import {
   definition,
   defineDateRange,
@@ -7,7 +7,7 @@ import {
   getStartAndFinishDay,
   defineTransitionMonth,
   getDaysInMonth,
-} from '../lib.js';
+} from '../../lib.js';
 
 const getCars = async (request, reply) => {
   try {
@@ -140,7 +140,7 @@ const getCarsStat = async (request, reply) => {
     if (car_id) {
       const { rows } = await db.query(
         `SELECT c.id AS car_id, c.state_number, 
-      CEIL(AVG(date_range)::decimal / $1 * 100) AS usage_percent
+      CEIL(SUM(date_range)::decimal / $1 * 100) AS usage_percent
       FROM car c LEFT JOIN booking_stats bs 
       ON bs.car_id = c.id WHERE c.id=$2 
       AND bs.start_date >= $3 AND bs.finish_date <= $4 GROUP BY c.id;`,
@@ -150,7 +150,7 @@ const getCarsStat = async (request, reply) => {
     } else {
       const { rows } = await db.query(
         `SELECT c.id AS car_id, c.state_number, 
-      CEIL(AVG(date_range)::decimal / $1 * 100) AS usage_percent
+      CEIL(SUM(date_range)::decimal / $1 * 100) AS usage_percent
       FROM car c LEFT JOIN booking_stats bs 
       ON bs.car_id = c.id  
       AND bs.start_date >= $2 AND bs.finish_date <= $3 GROUP BY c.id;`,
