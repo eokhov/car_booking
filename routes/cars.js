@@ -20,7 +20,7 @@ const CarStats = {
   properties: {
     car_id: { type: 'number' },
     state_number: { type: 'string' },
-    count_days: { type: 'number' },
+    usage_percent: { type: 'number' },
   },
 };
 
@@ -94,6 +94,7 @@ const getCarsStatOpts = {
         car_id: { type: 'number' },
         month: { type: 'number' },
       },
+      required: ['month'],
     },
     response: {
       200: {

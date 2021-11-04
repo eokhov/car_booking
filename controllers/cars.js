@@ -6,6 +6,7 @@ import {
   getDatesRange,
   getStartAndFinishDay,
   defineTransitionMonth,
+  getDaysInMonth,
 } from '../lib.js';
 
 const getCars = async (request, reply) => {
@@ -132,25 +133,28 @@ const createCarSession = async (request, reply) => {
 
 const getCarsStat = async (request, reply) => {
   const { car_id, month } = request.query;
-  const { firstDay, lastDay } = getStartAndFinishDay(+month);
+  const { firstDay, lastDay } = getStartAndFinishDay(month);
+  const countDaysInMonth = getDaysInMonth(month - 1);
 
   try {
     if (car_id) {
       const { rows } = await db.query(
-        `SELECT c.id AS car_id, c.state_number, SUM(bs.date_range) AS count_days
+        `SELECT c.id AS car_id, c.state_number, 
+      CEIL(AVG(date_range)::decimal / $1 * 100) AS usage_percent
       FROM car c LEFT JOIN booking_stats bs 
-      ON bs.car_id = c.id WHERE c.id=$1 
-      AND bs.start_date >= $2 AND bs.finish_date <= $3 GROUP BY c.id;`,
-        [car_id, firstDay, lastDay],
+      ON bs.car_id = c.id WHERE c.id=$2 
+      AND bs.start_date >= $3 AND bs.finish_date <= $4 GROUP BY c.id;`,
+        [countDaysInMonth, car_id, firstDay, lastDay],
       );
       reply.send(rows);
     } else {
       const { rows } = await db.query(
-        `SELECT c.id AS car_id, c.state_number, SUM(bs.date_range) AS count_days
+        `SELECT c.id AS car_id, c.state_number, 
+      CEIL(AVG(date_range)::decimal / $1 * 100) AS usage_percent
       FROM car c LEFT JOIN booking_stats bs 
       ON bs.car_id = c.id  
-      AND bs.start_date >= $1 AND bs.finish_date <= $2 GROUP BY c.id;`,
-        [firstDay, lastDay],
+      AND bs.start_date >= $2 AND bs.finish_date <= $3 GROUP BY c.id;`,
+        [countDaysInMonth, firstDay, lastDay],
       );
       reply.send(rows);
     }

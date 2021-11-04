@@ -55,6 +55,8 @@ const addDays = (date, days) =>
 
 const getDatesRange = (start, finish) => dayjs(finish).diff(start, 'days');
 
+const getDaysInMonth = month => dayjs().set('month', month).daysInMonth();
+
 const getStartAndFinishDay = m => {
   const month = dayjs().set('month', --m);
 
@@ -106,4 +108,5 @@ export {
   getDatesRange,
   getStartAndFinishDay,
   defineTransitionMonth,
+  getDaysInMonth,
 };
