@@ -1,8 +1,7 @@
-import db from '../../db.js';
+import { Car } from '../services/cars.js';
 import {
   definition,
   defineDateRange,
-  addDays,
   getDatesRange,
   getStartAndFinishDay,
   defineTransitionMonth,
@@ -11,7 +10,7 @@ import {
 
 const getCars = async (request, reply) => {
   try {
-    const { rows } = await db.query('SELECT * FROM car');
+    const { rows } = await Car.getAll();
     reply.send(rows);
   } catch (error) {
     console.log(error);
@@ -31,15 +30,7 @@ const checkAvailability = async (request, reply) => {
       .send({ status: 'Dates should not fall on a day off' });
   }
   try {
-    const { rows } = await db.query(
-      `SELECT * FROM car_session cs
-      WHERE (
-        $1 between cs.start_date and cs.finish_date
-        OR
-        $2 between cs.start_date and cs.finish_date
-      ) AND cs.car_id=$3 LIMIT 1`,
-      [start_date, finish_date, car_id],
-    );
+    const { rows } = await Car.check({ start_date, finish_date, car_id });
     if (rows.length) reply.send({ status: 'Сar is not available' });
     else reply.send({ status: 'Сar is available' });
   } catch (error) {
@@ -50,21 +41,11 @@ const checkAvailability = async (request, reply) => {
 
 const calculationCost = async (request, reply) => {
   const { start_date, finish_date, car_id } = request.query;
-
   const dateRange = getDatesRange(start_date, finish_date) + 1;
-
   try {
-    const { rows } = await db.query(
-      `SELECT c.id, t.cost, d.size AS discount_size 
-        FROM car c LEFT JOIN tarif t ON t.id=c.tarif_id 
-        LEFT JOIN discount_plan dp ON dp.tarif_id=c.tarif_id 
-        LEFT JOIN discount d ON d.id=dp.discount_id WHERE c.id=$1;`,
-      [car_id],
-    );
-
+    const { rows } = await Car.calculationCost(car_id);
     const cost = rows[0].cost;
     const cost_period = definition(dateRange, cost, rows);
-
     reply.send({
       car_id,
       cost_period,
@@ -83,47 +64,18 @@ const createCarSession = async (request, reply) => {
   const { car_id, cost_period, cost, start_date, finish_date, date_range } =
     request.body;
 
-  const bookingDates = defineTransitionMonth(start_date, finish_date);
+  const booking_dates = defineTransitionMonth(start_date, finish_date);
   try {
-    await db.query('BEGIN');
-    await db.query(
-      `INSERT INTO car_session
-      (car_id, cost_period, cost, start_date, finish_date, date_range, type)
-      values($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        car_id,
-        cost_period,
-        cost,
-        start_date,
-        finish_date,
-        date_range,
-        'booking',
-      ],
-    );
-    await db.query(
-      `INSERT INTO car_session
-      (car_id, cost_period, cost, start_date, finish_date, date_range, type)
-      values($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        car_id,
-        0,
-        0,
-        addDays(finish_date, 1),
-        addDays(finish_date, 3),
-        3,
-        'serice',
-      ],
-    );
-    for (const dates of bookingDates) {
-      await db.query(
-        `INSERT INTO booking_stats
-        (car_id, start_date, finish_date, date_range)
-        values($1, $2, $3, $4)`,
-        [car_id, dates.firstDate, dates.lastDate, dates.range],
-      );
-    }
-    await db.query('COMMIT');
-    reply.send({ create: 'OK' });
+    const result = await Car.createCarSession({
+      car_id,
+      cost_period,
+      cost,
+      start_date,
+      finish_date,
+      date_range,
+      booking_dates,
+    });
+    reply.send(result);
   } catch (error) {
     console.log(error);
     await db.query('ROLLBACK');
@@ -138,23 +90,18 @@ const getCarsStat = async (request, reply) => {
 
   try {
     if (car_id) {
-      const { rows } = await db.query(
-        `SELECT c.id AS car_id, c.state_number, 
-      CEIL(SUM(date_range)::decimal / $1 * 100) AS usage_percent
-      FROM car c LEFT JOIN booking_stats bs 
-      ON bs.car_id = c.id WHERE c.id=$2 
-      AND bs.start_date >= $3 AND bs.finish_date <= $4 GROUP BY c.id;`,
-        [countDaysInMonth, car_id, firstDay, lastDay],
+      const { rows } = await Car.getCarStatsByCar(
+        car_id,
+        firstDay,
+        lastDay,
+        countDaysInMonth,
       );
       reply.send(rows);
     } else {
-      const { rows } = await db.query(
-        `SELECT c.id AS car_id, c.state_number, 
-      CEIL(SUM(date_range)::decimal / $1 * 100) AS usage_percent
-      FROM car c LEFT JOIN booking_stats bs 
-      ON bs.car_id = c.id  
-      AND bs.start_date >= $2 AND bs.finish_date <= $3 GROUP BY c.id;`,
-        [countDaysInMonth, firstDay, lastDay],
+      const { rows } = await Car.getCarStats(
+        firstDay,
+        lastDay,
+        countDaysInMonth,
       );
       reply.send(rows);
     }
