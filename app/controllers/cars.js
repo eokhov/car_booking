@@ -13,7 +13,7 @@ const getCars = async (request, reply) => {
     const { rows } = await Car.getAll();
     reply.send(rows);
   } catch (error) {
-    console.log(error);
+    request.log.error(error);
     reply.status(500).send({ error: 'Internal server Error' });
   }
 };
@@ -34,7 +34,7 @@ const checkAvailability = async (request, reply) => {
     if (rows.length) reply.send({ status: 'Сar is not available' });
     else reply.send({ status: 'Сar is available' });
   } catch (error) {
-    console.log(error);
+    request.log.error(error);
     reply.status(500).send({ error: 'Internal server Error' });
   }
 };
@@ -55,7 +55,7 @@ const calculationCost = async (request, reply) => {
       cost,
     });
   } catch (error) {
-    console.log(error);
+    request.log.error(error);
     reply.status(500).send({ error: 'Internal server Error' });
   }
 };
@@ -77,7 +77,7 @@ const createCarSession = async (request, reply) => {
     });
     reply.send(result);
   } catch (error) {
-    console.log(error);
+    request.log.error(error);
     await db.query('ROLLBACK');
     reply.status(500).send({ error: 'Internal server Error' });
   }
@@ -106,7 +106,7 @@ const getCarsStat = async (request, reply) => {
       reply.send(rows);
     }
   } catch (error) {
-    console.log(error);
+    request.log.error(error);
     reply.status(500).send({ error: 'Internal server Error' });
   }
 };
